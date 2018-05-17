@@ -88,15 +88,24 @@ class Note(Duration, Tone):
 class Chord(Duration):
     def __init__(self, tones=('C', 'E', 'G'), duration=(1, 4)):
         self.tones = []
-        self.set_notes(tones)
+        self.add_notes(tones)
         super(Chord, self).__init__(duration=duration)
 
-    def set_notes(self, tones):
-        for tone in tones:
+    def set_notes(self, new_tones):
+        self.tones = []
+        self.add_notes(new_tones)
+
+    def add_notes(self, new_tones):
+        for tone in new_tones:
             if hasattr(tone, 'value') and hasattr(tone, 'octave'):
-                self.tones.append(Tone(tone.value, tone.octave))
+                new_tone = Tone(tone.value, tone.octave)
             else:
-                self.tones.append(Tone(*tone))
+                new_tone = Tone(*tone)
+
+            if any(x.value == new_tone.value and x.octave == new_tone.octave for x in self.tones):
+                pass
+            else:
+                self.tones.append(new_tone)
 
     def __str__(self):
         str_tones = ""
@@ -227,6 +236,8 @@ class Bar:
 class Track:
     def __init__(self):
         self.bars = []
+        self._notes_position = []
+        self._notes_position_needs_update = False
 
     def add_notes(self, notes):
         if type(notes) != Note and type(notes) != Chord and type(notes) != Rest and type(notes) != Bar and type(
@@ -252,6 +263,10 @@ class Track:
                 self.add_note(item)
                 return
 
+    def fill_end(self):
+        self.bars[-1].fill_end()
+        return
+
     def add_bar(self, bar):
         if len(self.bars) == 0:
             self.bars.append(bar)
@@ -270,10 +285,6 @@ class Track:
                 filler_bar.set_offset(self.bars[-1])
                 self.bars.append(bar)
                 return
-
-    def fill_end(self):
-        self.bars[-1].fill_end()
-        return
 
     def add_note(self, note):
         if len(self.bars) == 0:
@@ -298,6 +309,33 @@ class Track:
             pass
         else:
             return self.bars.pop()
+
+    def pop_note(self, index=None):
+        if index:
+            pass
+        else:
+            pass
+
+    def insert_bar(self, bar):
+        pass
+
+    def insert_note(self, note):
+        pass
+
+    def get_note(self, index):
+        pos = self._notes_position[index]
+        return self.bars[pos[0]].notes[pos[1]]
+
+    def update_notes_position(self):
+        for n, bar in enumerate(self.bars):
+            pos = [[n, x] for x in range(len(bar.notes))]
+            self._notes_position.extend(pos)
+
+    def __str__(self):
+        track_string=''
+        for bar in self.bars:
+            track_string+=str(bar)
+        return track_string
 
 
 class Error(Exception):
@@ -324,20 +362,7 @@ class FullBarError(Error):
 
 
 def main():
-    print(hf.smallest_common_multiple([2, 3, 4, 6, 5]))
-    print(hf.scm_factors([2, 3, 4, 6, 5]))
-
-    b = Bar()
-    n = Note("Cis", "1/4", 3)
-    d = Note("Cis", "3/4", 3)
-    b.add_notes(n)
-    b.add_notes(n)
-    b.add_notes(d)
-
-    track = Track()
-    track.add_notes(b)
-    track.add_notes(Note('Cis', "3/4", 5))
-    print(track)
+    pass
 
 
 if __name__ == "__main__":
