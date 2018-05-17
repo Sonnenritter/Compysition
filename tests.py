@@ -89,6 +89,7 @@ class TestNoteMethods(unittest.TestCase):
         note3 = note1 + note2
         self.assertEqual(str(note3), "2/4 D-4")
 
+
 class TestChordMethods(unittest.TestCase):
     def test_setup_empty(self):
         chord = Chord()
@@ -115,6 +116,12 @@ class TestChordMethods(unittest.TestCase):
         notes = [Note('C'), Note('D'), Note('E')]
         chord = Chord(notes)
         self.assertEqual(str(chord), "1/4 C-4,D-4,E-4")
+
+    def test_add(self):
+        tones = [Tone('C'), Tone('D'), Tone('E')]
+        chord = Chord(tones)
+        chord = chord + 'G'
+        self.assertEqual(str(chord), "1/4 C-4,D-4,E-4,G-4")
 
 
 class TestBarMethods(unittest.TestCase):

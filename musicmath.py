@@ -98,6 +98,11 @@ class Chord(Duration):
             else:
                 self.tones.append(Tone(*tone))
 
+    def add(self,other):
+
+
+    def __add__(self, other):
+        pass
     def __str__(self):
         str_tones = ""
         for tone in self.tones:
