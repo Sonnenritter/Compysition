@@ -123,6 +123,11 @@ class TestChordMethods(unittest.TestCase):
         chord = chord + 'G'
         self.assertEqual(str(chord), "1/4 C-4,D-4,E-4,G-4")
 
+    def test_setup_with_two_same_tones(self):
+        notes = [Note('C'), Note('E'), Note('E')]
+        chord = Chord(notes)
+        self.assertEqual(str(chord), "1/4 C-4,E-4")
+
 
 class TestBarMethods(unittest.TestCase):
     def test_setup_empty(self):
@@ -175,6 +180,16 @@ class TestBarMethods(unittest.TestCase):
         note = bar.pop(1)
         self.assertEqual(str(bar), "|4/4|1/4 C-4-> 1/4 E-4")
         self.assertEqual(str(note), "1/4 D-4")
+
+
+class TestTrackMethods(unittest.TestCase):
+    def test_add_bar(self):
+        bar1 = Bar([Note('C'), Note('D'), Note('E')])
+        bar2 = Bar([Note('D'), Note('G'), Note('E')])
+        track = Track()
+        track.add_bar(bar1)
+        track.add_bar(bar2)
+        self.assertEqual(str(track), "|4/4|1/4 C-4-> 1/4 D-4-> 1/4 E-4-> 1/4 rest|4/4|1/4 D-4-> 1/4 G-4-> 1/4 E-4")
 
 
 if __name__ == '__main__':
