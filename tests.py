@@ -1,11 +1,12 @@
 import unittest
-from musicmath import Duration, Tone, Note, Chord, Rest, Bar, Track, FullBarError
+from musicmath import Duration, Tone, Note, Chord, Rest, Bar, Melody, FullBarError
+import helperfunctions as hf
 
 
 class TestDurationMethods(unittest.TestCase):
     def test_setup_empty(self):
         duration = Duration()
-        self.assertEqual(str(duration), "4/4")
+        self.assertEqual(str(duration), "1/4")
 
     def test_setup_with_kwarg1(self):
         duration = Duration(duration="3/4")
@@ -67,7 +68,7 @@ class TestRestMethods(unittest.TestCase):
 
     def test_setup_with_arg(self):
         rest = Rest("4/4")
-        self.assertEqual(str(rest), '4/4 rest')
+        self.assertEqual(str(rest), '1/1 rest')
 
 
 class TestNoteMethods(unittest.TestCase):
@@ -77,17 +78,17 @@ class TestNoteMethods(unittest.TestCase):
 
     def test_setup_with_arg(self):
         note = Note("Cis", (2, 4), 5)
-        self.assertEqual(str(note), "2/4 Cis-5")
+        self.assertEqual(str(note), "1/2 Cis-5")
 
     def test_setup_with_kwarg(self):
         note = Note(value="Cis", duration=(2, 4), octave=5)
-        self.assertEqual(str(note), "2/4 Cis-5")
+        self.assertEqual(str(note), "1/2 Cis-5")
 
     def test_add(self):
         note1 = Note('Cis')
         note2 = Note('Cis')
         note3 = note1 + note2
-        self.assertEqual(str(note3), "2/4 D-4")
+        self.assertEqual(str(note3), "1/2 D-4")
 
 
 class TestChordMethods(unittest.TestCase):
@@ -117,11 +118,11 @@ class TestChordMethods(unittest.TestCase):
         chord = Chord(notes)
         self.assertEqual(str(chord), "1/4 C-4,D-4,E-4")
 
-    def test_add(self):
-        tones = [Tone('C'), Tone('D'), Tone('E')]
-        chord = Chord(tones)
-        chord = chord + 'G'
-        self.assertEqual(str(chord), "1/4 C-4,D-4,E-4,G-4")
+    #def test_add(self):
+    #    tones = [Tone('C'), Tone('D'), Tone('E')]
+    #    chord = Chord(tones)
+    #    chord = chord + 'G'
+    #    self.assertEqual(str(chord), "1/4 C-4,D-4,E-4,G-4")
 
     def test_setup_with_two_same_tones(self):
         notes = [Note('C'), Note('E'), Note('E')]
@@ -129,68 +130,67 @@ class TestChordMethods(unittest.TestCase):
         self.assertEqual(str(chord), "1/4 C-4,E-4")
 
 
-class TestBarMethods(unittest.TestCase):
-    def test_setup_empty(self):
-        bar = Bar()
-        self.assertEqual(str(bar), "|4/4|")
+# class TestBarMethods(unittest.TestCase):
+#     def test_setup_empty(self):
+#         bar = Bar()
+#         self.assertEqual(str(bar), "|4/4|")
+#
+#     def test_setup_with_single_note(self):
+#         note = Note('D')
+#         bar = Bar(note)
+#
+#         self.assertEqual(str(bar), "|4/4|1/4 D-4")
+#
+#     def test_setup_with_single_note_filling(self):
+#         note = Note('D')
+#         bar = Bar(note)
+#         self.assertEqual(str(bar.empty_space()), '3/4')
+#
+#     def test_setup_with_note_list(self):
+#         notes = [Note('C'), Note('D'), Note('E')]
+#         bar = Bar(notes)
+#         self.assertEqual(str(bar), "|4/4|1/4 C-4-> 1/4 D-4-> 1/4 E-4")
+#
+#     def test_setup_with_note_list_metre_and_offset(self):
+#         notes = [Note('C'), Note('D'), Note('E')]
+#         offset = (1, 4)
+#         metre = '3/4'
+#         with self.assertRaises(FullBarError) as cm:
+#             bar = Bar(notes=notes, metre=metre, offset=offset)
+#             print(bar.filled_space())
+#         exception = cm.exception
+#         self.assertEqual(exception.msg, "Bar is full")
+#
+#     def test_setup_with_note_list_metre_and_offset1(self):
+#         notes = [Note('C'), Note('D'), Note('E')]
+#         offset = (1, 4)
+#         metre = '4/4'
+#         bar = Bar(notes=notes, metre=metre, offset=offset)
+#         self.assertEqual(str(bar), "|4/4|1/4 C-4-> 1/4 D-4-> 1/4 E-4")
+#
+#     def test_pop(self):
+#         notes = [Note('C'), Note('D'), Note('E')]
+#         bar = Bar(notes=notes)
+#         note = bar.pop()
+#         self.assertEqual(str(bar), "|4/4|1/4 C-4-> 1/4 D-4")
+#         self.assertEqual(str(note), "1/4 E-4")
+#
+#     def test_pop_with_index(self):
+#         notes = [Note('C'), Note('D'), Note('E')]
+#         bar = Bar(notes=notes)
+#         note = bar.pop(1)
+#         self.assertEqual(str(bar), "|4/4|1/4 C-4-> 1/4 E-4")
+#         self.assertEqual(str(note), "1/4 D-4")
+#
+#     def test_remove
+#
 
-    def test_setup_with_single_note(self):
-        note = Note('D')
-        bar = Bar(note)
-
-        self.assertEqual(str(bar), "|4/4|1/4 D-4")
-
-    def test_setup_with_single_note_filling(self):
-        note = Note('D')
-        bar = Bar(note)
-        self.assertEqual(bar.empty_space(), (0.75, 3, 4))
-
-    def test_setup_with_note_list(self):
-        notes = [Note('C'), Note('D'), Note('E')]
-        bar = Bar(notes)
-        self.assertEqual(str(bar), "|4/4|1/4 C-4-> 1/4 D-4-> 1/4 E-4")
-
-    def test_setup_with_note_list_metre_and_offset(self):
-        notes = [Note('C'), Note('D'), Note('E')]
-        offset = (1, 4)
-        metre = '3/4'
-        with self.assertRaises(FullBarError) as cm:
-            bar = Bar(notes=notes, metre=metre, offset=offset)
-            print(bar.filled_space())
-        exception = cm.exception
-        self.assertEqual(exception.msg, "Bar is full")
-
-    def test_setup_with_note_list_metre_and_offset1(self):
-        notes = [Note('C'), Note('D'), Note('E')]
-        offset = (1, 4)
-        metre = '4/4'
-        bar = Bar(notes=notes, metre=metre, offset=offset)
-        self.assertEqual(str(bar), "|4/4|1/4 C-4-> 1/4 D-4-> 1/4 E-4")
-
-    def test_pop(self):
-        notes = [Note('C'), Note('D'), Note('E')]
-        bar = Bar(notes=notes)
-        note = bar.pop()
-        self.assertEqual(str(bar), "|4/4|1/4 C-4-> 1/4 D-4")
-        self.assertEqual(str(note), "1/4 E-4")
-
-    def test_pop_with_index(self):
-        notes = [Note('C'), Note('D'), Note('E')]
-        bar = Bar(notes=notes)
-        note = bar.pop(1)
-        self.assertEqual(str(bar), "|4/4|1/4 C-4-> 1/4 E-4")
-        self.assertEqual(str(note), "1/4 D-4")
+class TestMelodyMethods(unittest.TestCase):
+    pass
 
 
-class TestTrackMethods(unittest.TestCase):
-    def test_add_bar(self):
-        bar1 = Bar([Note('C'), Note('D'), Note('E')])
-        bar2 = Bar([Note('D'), Note('G'), Note('E')])
-        track = Track()
-        track.add_bar(bar1)
-        track.add_bar(bar2)
-        self.assertEqual(str(track), "|4/4|1/4 C-4-> 1/4 D-4-> 1/4 E-4-> 1/4 rest|4/4|1/4 D-4-> 1/4 G-4-> 1/4 E-4")
-
+class TestHelperfunctions(unittest.TestCase):
+    pass
 
 if __name__ == '__main__':
     unittest.main()
