@@ -91,3 +91,11 @@ def smallest_common_multiple(numbers):
         scm = m * current_factor
 
     return scm
+
+
+def notiply(a, b):
+    new_notes = []
+    for note in a:
+        for othernote in b:
+            new_notes.append(note + othernote)
+    return new_notes

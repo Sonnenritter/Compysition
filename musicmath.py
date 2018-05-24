@@ -61,6 +61,7 @@ class Tone:
         return hf.tone_str_to_int(self.value)
 
     def set_value(self, value):
+        value = value.capitalize()
         if value in self.CORRECT_TONE_VALUES:
             self.value = value
         else:
@@ -107,11 +108,12 @@ class Chord(Duration):
             else:
                 self.tones.append(new_tone)
 
-    def add(self,other):
-
+    def add(self, other):
+        pass
 
     def __add__(self, other):
         pass
+
     def __str__(self):
         str_tones = ""
         for tone in self.tones:
@@ -337,9 +339,9 @@ class Track:
             self._notes_position.extend(pos)
 
     def __str__(self):
-        track_string=''
+        track_string = ''
         for bar in self.bars:
-            track_string+=str(bar)
+            track_string += str(bar)
         return track_string
 
 
@@ -365,9 +367,32 @@ class FullBarError(Error):
     def __init__(self, msg):
         self.msg = msg
 
+def noteinput():
+    notes = input("first note set")
+    notes = notes.split(',')
+    notes = [Note(x) for x in notes]
+    return  notes
+
+def notiplyinput():
+    notes_a = noteinput()
+    notes_b = noteinput()
+
+    ply = hf.notiply(notes_a, notes_b)
+    for note in ply:
+        print(str(note))
+    again = input('again?')
+    if again =='y':
+        notiplyinput()
+
+def notishift():
+    notes_a = noteinput()
+    notes_b = noteinput()
+
+    while
 
 def main():
-    pass
+
+   notiplyinput()
 
 
 if __name__ == "__main__":
