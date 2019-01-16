@@ -5,6 +5,7 @@ import play
 import time
 from typing import List
 from threading import Thread
+from exceptions import InputError
 
 
 class Duration:
@@ -43,6 +44,10 @@ class Duration:
 
     def stop(self):
         pass
+
+    @property
+    def distance(self):
+        return self.duration
 
 
 class Tone:
@@ -225,34 +230,14 @@ class Melody:
 
             note.stop()
 
+    def return_interval_with(self, start: float, stop: float):
+        pass
+
     def __str__(self):
         track_string = ''
         for note in self.notes:
             track_string += str(note)
         return track_string
-
-
-class Error(Exception):
-    """Base class for exceptions in this module."""
-    pass
-
-
-class InputError(Error):
-    """Exception raised for errors in the input.
-
-    Attributes:
-        expr -- input expression in which the error occurred
-        msg  -- explanation of the error
-    """
-
-    def __init__(self, expr, msg):
-        self.expr = expr
-        self.msg = msg
-
-
-class FullBarError(Error):
-    def __init__(self, msg):
-        self.msg = msg
 
 
 def note_input():
@@ -295,17 +280,26 @@ def main():
     D = Duration
 
     m_list = []
+    m_list.append(M([], 100))
     m_list.append(M([], 120))
-    m_list.append(M([], 120))
-    m_list.append(M([], 120))
-    m_list.append(M([], 120))
-    m_list.append(M([], 120))
+    m_list.append(M([], 140))
+    m_list.append(M([], 160))
+    m_list.append(M([], 180))
     for i in range(0, 400):
-        m_list[0].add_note(N(i, (1, 4), velocity=100))
-        m_list[1].add_note(N(i + 4, (1, 4), velocity=100))
-        m_list[2].add_note(N(i + 7, (1, 4), velocity=100))
-        m_list[3].add_note(N(i + 8, (1, 4), velocity=100))
-        m_list[4].add_note(N(i + 10, (1, 4), velocity=100))
+        oct = 0
+        if i == 30:
+            oct += 1
+
+        if i == 100:
+            oct += 1
+        if i == 120:
+            oct += 1
+
+        m_list[0].add_note(N(i, (1, i * i % 12 + 1), velocity=100 - i % 100, octave=oct % 4 + 3))
+        m_list[1].add_note(N(i + 4 * i, (2, i * (i + 1) % 12 + 1), velocity=i * 7 % 100, octave=oct + 3 % 4 + 3))
+        m_list[2].add_note(N(i + 7 * i, (1, 4), velocity=i * 7 % 100, octave=oct + 2 % 4 + 3))
+        m_list[3].add_note(N(i + 8 * i, (1, 6 + (i % 3)), velocity=i * 7 % 100, octave=oct + 1 % 4 + 3))
+        m_list[4].add_note(N(i + 10 * i, (1, 4), velocity=i * 7 % 100, octave=oct + 4 % 4 + 3))
 
     with play.Player() as player:
         threads = []

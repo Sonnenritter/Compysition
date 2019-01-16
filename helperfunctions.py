@@ -1,11 +1,10 @@
 from fractions import Fraction
+from exceptions import OutofBoundsError
 
-
-
-dur=[0,2,4,5,7,9,11]
-nat_moll=(0,2,3,5,7,8,10)
-har_moll=(0,2,3,5,7,8,11)
-mel_moll=(0,2,)
+dur = [0, 2, 4, 5, 7, 9, 11]
+nat_moll = (0, 2, 3, 5, 7, 8, 10)
+har_moll = (0, 2, 3, 5, 7, 8, 11)
+mel_moll = (0, 2,)
 
 
 def tone_int_to_str(int_tone):
@@ -51,24 +50,16 @@ def tone_str_to_int(str_tone):
     }.get(str_tone, 0)
 
 
-
-
-def notishift(a,b,shift=0):
-    new_notes=[]
-    n=0
-    len_a=len(a)
-    len_b=len(b)
-    notes_lcm= lcm(len_a,len_b)
-    while(n<notes_lcm):
-        new_notes.append(a[n%len_a] + b[(n+shift)%len_b])
-        n+=1
+def notishift(a, b, shift=0):
+    new_notes = []
+    n = 0
+    len_a = len(a)
+    len_b = len(b)
+    notes_lcm = lcm(len_a, len_b)
+    while (n < notes_lcm):
+        new_notes.append(a[n % len_a] + b[(n + shift) % len_b])
+        n += 1
     return new_notes
-
-
-
-
-
-
 
 
 def notiply(a, b):
@@ -78,13 +69,70 @@ def notiply(a, b):
             new_notes.append(note + othernote)
     return new_notes
 
+
 def gcd(a, b):
     """Return greatest common divisor using Euclid's Algorithm."""
     while b:
         a, b = b, a % b
     return a
 
+
 def lcm(a, b):
     """Return lowest common multiple."""
     return a * b // gcd(a, b)
 
+
+def get_whole_distance_from_distance_list(the_list) -> Fraction:
+    whole_distance = Fraction(0)
+    for item in the_list:
+        whole_distance += Fraction(item.distance)
+    return whole_distance
+
+
+def get_item_index_next_point_from_distance_list(point: Fraction, the_list):
+    w_d = get_whole_distance_from_distance_list(the_list)
+    if w_d <= point:
+        raise OutofBoundsError
+    l = len(the_list)
+
+    walked_distance = 0
+    for n, item in enumerate(the_list):
+        if walked_distance < point:
+            walked_distance += item.distance
+        else:
+            return n
+    raise OutofBoundsError
+
+
+def get_item_index_before_point_from_distance_list(point: Fraction, the_list):
+    w_d = get_whole_distance_from_distance_list(the_list)
+    if 0 >= point:
+        raise OutofBoundsError
+
+    l = len(the_list)
+    remaining_distance = w_d-the_list[-1].distance
+    for n, item in enumerate(reversed(the_list)):
+        if remaining_distance >= point:
+            remaining_distance -= item.distance
+        else:
+            return len(the_list) - n - 1
+    raise OutofBoundsError
+
+
+def get_item_next_point_from_distance_list(point: Fraction, the_list):
+    index = get_item_index_next_point_from_distance_list(point, the_list)
+    return the_list[index]
+
+
+def get_interval_from_distance_list(start: Fraction, stop: Fraction, the_list):
+    w_d = get_whole_distance_from_distance_list(the_list)
+    if start > w_d:
+        raise OutofBoundsError
+    if stop < start:
+        return []
+
+    start_index = get_item_index_next_point_from_distance_list(start, the_list)
+    print(start_index)
+    stop_index = get_item_index_before_point_from_distance_list(stop, the_list)
+    print(stop_index)
+    return the_list[start_index:stop_index+1]

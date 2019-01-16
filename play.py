@@ -27,8 +27,8 @@ class Player:
 
         # 20<key<109
         sfid = fs.sfload("nice-keys.sf2")
-        fs.program_select(0, sfid, 0, 0)
-        fs.program_select(1, sfid, 0, 0)  # use the same program for channel 2 for cheapness
+        fs.program_select(0, sfid, 0, 1)
+        fs.program_select(1, sfid, 0, 1)  # use the same program for channel 2 for cheapness
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         fs.delete()

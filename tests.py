@@ -1,6 +1,8 @@
 import unittest
-from musicmath import Duration, Tone, Note, Chord, Rest, Melody, FullBarError
+from musicmath import Duration, Tone, Note, Chord, Rest, Melody
+from exceptions import FullBarError
 import helperfunctions as hf
+from fractions import Fraction
 
 N = Note
 T = Tone
@@ -157,7 +159,49 @@ class TestMelodyMethods(unittest.TestCase):
 
 
 class TestHelperfunctions(unittest.TestCase):
-    pass
+    def setUp(self):
+        self.d1 = D(0.5)
+        self.d2 = D(0.5)
+        self.d3 = D(0.5)
+        self.d4 = D(0.5)
+        self.d5 = D(0.5)
+        self.d_l1 = [self.d1, self.d2]
+        self.d_l2 = [self.d1, self.d2, self.d3, self.d4, self.d5]
+
+    def test_get_whole_distance_from_distance_list(self):
+        dist = hf.get_whole_distance_from_distance_list(self.d_l1)
+        self.assertEqual(1, dist)
+
+    def test_get_get_item_index_under_point_from_distance_list(self):
+        index = hf.get_item_index_next_point_from_distance_list(Fraction(0.2), self.d_l2)
+        index2 = hf.get_item_index_next_point_from_distance_list(Fraction(0.0), self.d_l2)
+        index3 = hf.get_item_index_next_point_from_distance_list(Fraction(0.5), self.d_l2)
+        index4 = hf.get_item_index_next_point_from_distance_list(Fraction(0.8), self.d_l2)
+        index5 = hf.get_item_index_next_point_from_distance_list(Fraction(2), self.d_l2)
+
+        self.assertEqual(index, 1)
+        self.assertEqual(index2, 0)
+        self.assertEqual(index3, 1)
+        self.assertEqual(index4, 2)
+        self.assertEqual(index5, 4)
+
+    def test_get_item_index_before_point_from_distance_list(self):
+        index = hf.get_item_index_before_point_from_distance_list(Fraction(2.5), self.d_l2)
+        index2 = hf.get_item_index_before_point_from_distance_list(Fraction(2.3), self.d_l2)
+        index3 = hf.get_item_index_before_point_from_distance_list(Fraction(0.5), self.d_l2)
+        index4 = hf.get_item_index_before_point_from_distance_list(Fraction(0.8), self.d_l2)
+        index5 = hf.get_item_index_before_point_from_distance_list(Fraction(2), self.d_l2)
+        self.assertEqual(index, 4)
+        self.assertEqual(index2, 4)
+        self.assertEqual(index3, 0)
+        self.assertEqual(index4, 1)
+        self.assertEqual(index5, 3)
+
+    def test_get_interval_from_distance_list(self):
+        interval = hf.get_interval_from_distance_list(Fraction(0), Fraction(2.5), self.d_l2)
+        for p in interval:
+            print(p)
+        self.assertEqual(interval, self.d_l2)
 
 
 if __name__ == '__main__':
