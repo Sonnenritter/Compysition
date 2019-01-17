@@ -56,7 +56,7 @@ def notishift(a, b, shift=0):
     len_a = len(a)
     len_b = len(b)
     notes_lcm = lcm(len_a, len_b)
-    while (n < notes_lcm):
+    while n < notes_lcm:
         new_notes.append(a[n % len_a] + b[(n + shift) % len_b])
         n += 1
     return new_notes
@@ -110,13 +110,20 @@ def get_item_index_before_point_from_distance_list(point: Fraction, the_list):
         raise OutofBoundsError
 
     l = len(the_list)
-    remaining_distance = w_d-the_list[-1].distance
+    remaining_distance = w_d - the_list[-1].distance
     for n, item in enumerate(reversed(the_list)):
         if remaining_distance >= point:
             remaining_distance -= item.distance
         else:
             return len(the_list) - n - 1
     raise OutofBoundsError
+
+
+def get_distance_between_items(index_a, index_b, the_list) -> Fraction:
+    distance = 0
+    for item in the_list[index_a:index_b]:
+        distance += item.distance
+    return Fraction(distance)
 
 
 def get_item_next_point_from_distance_list(point: Fraction, the_list):
@@ -135,4 +142,11 @@ def get_interval_from_distance_list(start: Fraction, stop: Fraction, the_list):
     print(start_index)
     stop_index = get_item_index_before_point_from_distance_list(stop, the_list)
     print(stop_index)
-    return the_list[start_index:stop_index+1]
+    return the_list[start_index:stop_index + 1]
+
+
+def get_interval_with_offset(start: Fraction, stop: Fraction, the_list):
+    interval = get_interval_from_distance_list(start, stop, the_list)
+    dist_to_a = get_distance_between_items(0, start, the_list)
+    offset = Fraction(dist_to_a - start)
+    return offset, interval

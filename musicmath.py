@@ -180,18 +180,10 @@ class Rest(Duration):
 
 
 class Melody:
-    def __init__(self, notes, tempo):
+    def __init__(self, notes):
         self.notes = []
         self.add_notes(notes)
         self.metres = []
-        self.tempo = None
-        self.set_tempo(tempo)
-
-    def set_tempo(self, tempo):
-        if 0 < tempo:
-            self.tempo = tempo
-        else:
-            raise InputError(tempo, "tempo to small")
 
     def add_notes(self, notes):
         for note in notes:
@@ -223,15 +215,19 @@ class Melody:
     def get_note(self, index):
         pass
 
-    def play(self):
+    def play(self,tempo):
+        if 0 >= tempo:
+            raise InputError(tempo, "tempo to small")
         for note in self.notes:
             note.play()
-            time.sleep((self.tempo / 60) * float(note.duration))
+            time.sleep((tempo / 60) * float(note.duration))
 
             note.stop()
 
-    def return_interval_with(self, start: float, stop: float):
-        pass
+    def return_interval_with_offset(self, start: Fraction, stop: Fraction):
+        offset, interval = hf.get_interval_with_offset(start, stop, self.notes)
+        interval.insert(0, Duration(offset))
+        return interval
 
     def __str__(self):
         track_string = ''
@@ -280,11 +276,11 @@ def main():
     D = Duration
 
     m_list = []
-    m_list.append(M([], 100))
-    m_list.append(M([], 120))
-    m_list.append(M([], 140))
-    m_list.append(M([], 160))
-    m_list.append(M([], 180))
+    m_list.append(M([]))
+    m_list.append(M([]))
+    m_list.append(M([]))
+    m_list.append(M([]))
+    m_list.append(M([]))
     for i in range(0, 400):
         oct = 0
         if i == 30:
