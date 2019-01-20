@@ -104,7 +104,7 @@ def get_item_index_next_point_from_distance_list(point: Fraction, the_list):
     raise OutofBoundsError
 
 
-def get_item_index_before_point_from_distance_list(point: Fraction, the_list):
+def get_item_index_before_point_from_distance_list(point: Fraction, the_list) -> int:
     w_d = get_whole_distance_from_distance_list(the_list)
     if 0 >= point:
         raise OutofBoundsError
@@ -119,7 +119,7 @@ def get_item_index_before_point_from_distance_list(point: Fraction, the_list):
     raise OutofBoundsError
 
 
-def get_distance_between_items(index_a, index_b, the_list) -> Fraction:
+def get_distance_between_items(index_a:int , index_b:int, the_list) -> Fraction:
     distance = 0
     for item in the_list[index_a:index_b]:
         distance += item.distance
@@ -131,7 +131,7 @@ def get_item_next_point_from_distance_list(point: Fraction, the_list):
     return the_list[index]
 
 
-def get_interval_from_distance_list(start: Fraction, stop: Fraction, the_list):
+def get_interval_indices_from_distance_list(start: Fraction, stop: Fraction, the_list)-> (int, int):
     w_d = get_whole_distance_from_distance_list(the_list)
     if start > w_d:
         raise OutofBoundsError
@@ -139,14 +139,14 @@ def get_interval_from_distance_list(start: Fraction, stop: Fraction, the_list):
         return []
 
     start_index = get_item_index_next_point_from_distance_list(start, the_list)
-    print(start_index)
+
     stop_index = get_item_index_before_point_from_distance_list(stop, the_list)
-    print(stop_index)
-    return the_list[start_index:stop_index + 1]
+
+    return start_index,stop_index
 
 
 def get_interval_with_offset(start: Fraction, stop: Fraction, the_list):
-    interval = get_interval_from_distance_list(start, stop, the_list)
-    dist_to_a = get_distance_between_items(0, start, the_list)
+    start_index, stop_index = get_interval_indices_from_distance_list(start, stop, the_list)
+    dist_to_a = get_distance_between_items(0, start_index, the_list)
     offset = Fraction(dist_to_a - start)
-    return offset, interval
+    return offset, the_list[start_index:stop_index+1]

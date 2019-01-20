@@ -1,8 +1,25 @@
 #!/usr/bin/env python3
-import threading
-import time
+from fractions import Fraction
 import fluidsynth
 from ctypes import *
+
+
+class PlayCommand:
+    def __init__(self, function, offset:Fraction,arguments=None):
+        self.function = function
+        self.arguments = arguments
+        self.offset=offset
+
+    def run(self):
+        self.function(*self.arguments)
+
+
+def note_to_commands(note):
+
+    com1 = PlayCommand(play_note, note.offset, [note.tone,note.octave,note.velocity] )
+    com2 = PlayCommand(stop_note, note.offset+note.duration, [note.tone,note.octave] )
+    return [com1,com2]
+
 
 
 def get_key(tone, octave):

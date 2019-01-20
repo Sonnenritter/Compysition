@@ -198,7 +198,7 @@ class TestHelperfunctions(unittest.TestCase):
         self.assertEqual(index5, 3)
 
     def test_get_interval_from_distance_list(self):
-        interval = hf.get_interval_from_distance_list(Fraction(0), Fraction(2.5), self.d_l2)
+        interval = hf.get_interval_indices_from_distance_list(Fraction(0), Fraction(2.5), self.d_l2)
         for p in interval:
             print(p)
         self.assertEqual(interval, self.d_l2)

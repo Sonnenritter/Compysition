@@ -4,16 +4,16 @@ from fractions import Fraction
 import play
 import time
 from typing import List
-from threading import Thread
 from exceptions import InputError
+from threading import Thread
 
 
 class Duration:
     def __init__(self, duration=(1, 4), *args, **kwargs):
         self.duration = None
-
+        self.location = None
         self.set_duration(duration)
-
+        self.offset = 0
         super().__init__(*args, **kwargs)
 
     def set_duration(self, duration):
@@ -58,7 +58,7 @@ class Tone:
     INT_VALUES = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 
     def __init__(self, value, octave=4, velocity=50, *args, **kwargs):
-        self.value = None
+        self.tone = None
         self.set_value(value)
         self.octave = 0
         self.set_octave(octave)
@@ -67,7 +67,7 @@ class Tone:
 
     @property
     def int_value(self):
-        return self.value
+        return self.tone
 
     def set_octave(self, octave):
         self.octave = int(octave)
@@ -84,20 +84,20 @@ class Tone:
     def set_value_from_name(self, name_value: str):
         name_value = name_value.capitalize()
         if name_value in self.CORRECT_TONE_VALUES:
-            self.value = hf.tone_str_to_int(name_value)
+            self.tone = hf.tone_str_to_int(name_value)
 
     def set_value(self, value: int):
         value = value % 12
         if value in self.INT_VALUES:
-            self.value = value
+            self.tone = value
         else:
             raise InputError(value, "invalid value")
 
     def __str__(self):
-        return str(hf.tone_int_to_str(self.value)) + "-" + str(self.octave)
+        return str(hf.tone_int_to_str(self.tone)) + "-" + str(self.octave)
 
     def __eq__(self, other):
-        return self.value == other.int_value and self.octave == other.octave
+        return self.tone == other.int_value and self.octave == other.octave
 
 
 class Note(Duration, Tone):
@@ -105,10 +105,10 @@ class Note(Duration, Tone):
         super().__init__(value=value, duration=duration, octave=octave, velocity=velocity)
 
     def __str__(self):
-        return self.frac_to_str() + " " + str(hf.tone_int_to_str(self.value)) + "-" + str(self.octave)
+        return self.frac_to_str() + " " + str(hf.tone_int_to_str(self.tone)) + "-" + str(self.octave)
 
     def add_note(self, other):
-        new_note = Note(duration=self.add_dur(other).duration, value=self.add_tone(other).value)
+        new_note = Note(duration=self.add_dur(other).duration, value=self.add_tone(other).tone)
         return new_note
 
     def __add__(self, other):
@@ -180,18 +180,33 @@ class Rest(Duration):
 
 
 class Melody:
-    def __init__(self, notes):
+    def __init__(self, notes: List[Duration]):
         self.notes = []
         self.add_notes(notes)
         self.metres = []
+        self.length = 0
+        self.update_length()
+        self.set_notes_offset()
+
+    def set_notes_offset(self):
+        for n, note in enumerate(self.notes):
+            note.offset = hf.get_distance_between_items(0, n, self.notes)
+            print(note.offset)
 
     def add_notes(self, notes):
         for note in notes:
             self.add_note(note)
+        self.update_values()
+
+    def update_values(self):
+        self.update_length()
+        self.set_notes_offset()
+
+    def update_length(self):
+        self.length = hf.get_whole_distance_from_distance_list(self.notes)
 
     def add_note(self, note: Duration):
         self.notes.append(note)
-        return
 
     def set_metre(self, metre=(4, 4), start_bar=0, end_bar=None):
         pass
@@ -215,14 +230,8 @@ class Melody:
     def get_note(self, index):
         pass
 
-    def play(self,tempo):
-        if 0 >= tempo:
-            raise InputError(tempo, "tempo to small")
-        for note in self.notes:
-            note.play()
-            time.sleep((tempo / 60) * float(note.duration))
-
-            note.stop()
+    def play(self, tempo):
+        play_note_list(self.notes, tempo)
 
     def return_interval_with_offset(self, start: Fraction, stop: Fraction):
         offset, interval = hf.get_interval_with_offset(start, stop, self.notes)
@@ -234,6 +243,46 @@ class Melody:
         for note in self.notes:
             track_string += str(note)
         return track_string
+
+
+class Piece:
+    def __init__(self, melodies: List[Melody]):
+        self.melodies = melodies
+        self.step_size = Fraction(2)
+        self.current_step = Fraction(0)
+        self.last_step = Fraction(0)
+        self.length = max(melody.length for melody in self.melodies)
+        self.command_list = []
+
+    def make_ready_to_play(self):
+        unsorted_commands = []
+        for melody in self.melodies:
+            melody.update_values()
+            for note in melody.notes:
+                unsorted_commands.extend(play.note_to_commands(note))
+
+        self.command_list = sorted(unsorted_commands, key=lambda k: k.offset)
+
+        for command in self.command_list:
+            print(command.offset)
+
+    def play(self, tempo):
+        with play.Player() as player:
+            for n, command in enumerate(self.command_list):
+                command.run()
+                if n < len(self.command_list)-1:
+                    next_offset = self.command_list[n + 1].offset - command.offset
+                    time.sleep((tempo / 60) * float(next_offset))
+
+
+def play_note_list(notes: List[Duration], tempo):
+    if 0 >= tempo:
+        raise InputError(tempo, "tempo to small")
+    for note in notes:
+        note.play()
+        time.sleep((tempo / 60) * float(note.duration))
+
+        note.stop()
 
 
 def note_input():
@@ -265,49 +314,3 @@ def notishift_input():
     again = input('again?')
     if again == 'y':
         notishift_input()
-
-
-def main():
-    N = Note
-    T = Tone
-    R = Rest
-    M = Melody
-    C = Chord
-    D = Duration
-
-    m_list = []
-    m_list.append(M([]))
-    m_list.append(M([]))
-    m_list.append(M([]))
-    m_list.append(M([]))
-    m_list.append(M([]))
-    for i in range(0, 400):
-        oct = 0
-        if i == 30:
-            oct += 1
-
-        if i == 100:
-            oct += 1
-        if i == 120:
-            oct += 1
-
-        m_list[0].add_note(N(i, (1, i * i % 12 + 1), velocity=100 - i % 100, octave=oct % 4 + 3))
-        m_list[1].add_note(N(i + 4 * i, (2, i * (i + 1) % 12 + 1), velocity=i * 7 % 100, octave=oct + 3 % 4 + 3))
-        m_list[2].add_note(N(i + 7 * i, (1, 4), velocity=i * 7 % 100, octave=oct + 2 % 4 + 3))
-        m_list[3].add_note(N(i + 8 * i, (1, 6 + (i % 3)), velocity=i * 7 % 100, octave=oct + 1 % 4 + 3))
-        m_list[4].add_note(N(i + 10 * i, (1, 4), velocity=i * 7 % 100, octave=oct + 4 % 4 + 3))
-
-    with play.Player() as player:
-        threads = []
-        for m in m_list:
-            t = Thread(target=m.play)
-            threads.append(t)
-            t.start()
-        for t in threads:
-            t.join()
-        time.sleep(1)
-    # notishift_input()
-
-
-if __name__ == "__main__":
-    main()
